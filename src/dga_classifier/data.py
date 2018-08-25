@@ -16,7 +16,7 @@ from dga_classifier.dga_generators import banjori, corebot, cryptolocker, \
 ALEXA_1M = 'http://s3.amazonaws.com/alexa-static/top-1m.csv.zip'
 
 # Our ourput file containg all the training data
-DATA_FILE = 'traindata.pkl'
+DATA_FILE = os.environ.get('DATA_FILE', 'traindata.pkl')
 
 def get_alexa(num, address=ALEXA_1M, filename='top-1m.csv'):
     """Grabs Alexa 1M"""

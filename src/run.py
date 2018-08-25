@@ -12,7 +12,7 @@ import dga_classifier.lstm as lstm
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
-RESULT_FILE = 'results.pkl'
+RESULT_FILE = os.environ.get('RESULT_FILE', 'results.pkl')
 
 def run_experiments(isbigram=True, islstm=True, nfolds=10):
     """Runs all experiments"""
@@ -20,14 +20,17 @@ def run_experiments(isbigram=True, islstm=True, nfolds=10):
     lstm_results = None
 
     if isbigram:
-        bigram_results = bigram.run(nfolds=nfolds)
+        max_bigram_epoch = int(os.environ.get('MAX_BIGRAM_EPOCH', 50))
+        bigram_results = bigram.run(nfolds=nfolds, max_epoch=max_bigram_epoch)
 
     if islstm:
-        lstm_results = lstm.run(nfolds=nfolds)
+        max_lstm_epoch = int(os.environ.get('MAX_LSTM_EPOCH', 25))
+        lstm_results = lstm.run(nfolds=nfolds, max_epoch=max_lstm_epoch)
 
     return bigram_results, lstm_results
 
-def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
+def create_figs(isbigram=os.environ.get('BIGRAM', True), islstm=os.environ.get('LSTM', True),
+                nfolds=os.environ.get('NFOLDS', 1), force=os.environ.get('FORCE', False)):
     """Create figures"""
     # Generate results if needed
     if force or (not os.path.isfile(RESULT_FILE)):
@@ -62,8 +65,6 @@ def create_figs(isbigram=True, islstm=True, nfolds=10, force=False):
         lstm_binary_fpr, lstm_binary_tpr, lstm_binary_auc = calc_macro_roc(fpr, tpr)
 
     # Save figure
-
-
     from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
         plt.plot(lstm_binary_fpr, lstm_binary_tpr,
@@ -95,4 +96,4 @@ def calc_macro_roc(fpr, tpr):
     return all_fpr, mean_tpr / len(tpr), auc(all_fpr, mean_tpr) / len(tpr)
 
 if __name__ == "__main__":
-    create_figs(nfolds=1) # Run with 1 to make it fast
+    create_figs(nfolds=os.environ.get('NFOLDS', 1))  # Run with 1 to make it fast
