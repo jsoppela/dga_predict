@@ -36,7 +36,7 @@ def run_experiments(isbigram=True, islstm=True, nfolds=10):
 
 
 def create_figs(isbigram=os.environ.get('BIGRAM', True), islstm=os.environ.get('LSTM', True),
-                nfolds=os.environ.get('NFOLDS', 1), force=os.environ.get('FORCE', False)):
+                nfolds=10, force=os.environ.get('FORCE', False)):
     """Create figures"""
     # Generate results if needed
     if force or (not os.path.isfile(RESULT_FILE)):
@@ -105,17 +105,21 @@ def calc_macro_roc(fpr, tpr):
 
 def write_results_to_csv(results):
     for resultset in results:
-        for fold in results[resultset]:
-            writeset = {}
-            csv_file = open('{0}-{1}-resultset.csv'.format(resultset, fold['epochs']), 'w')
-            domain = [x[1] for x in fold['indata_test']]
-            label = [x[0] for x in fold['indata_test']]
-            writeset["domain"] = domain
-            writeset["label"] = label
+        for nfold in range(len(results[resultset])):
+            fold = results[resultset][nfold]
+            csv_file = open('{0}-{1}-resultset.csv'.format(resultset, nfold), 'w')
+            writer = csv.DictWriter(csv_file, fieldnames=['domain', 'real_label', 'prob', 'real_y'])
+            writer.writeheader()
+            for i in range(len(fold['indata_test'])):
 
-            writer = csv.writer(csv_file)
-            for key, value in writeset.items():
-                writer.writerow([key, value])
+                row = {'domain': fold['indata_test'][i][1],
+                       'real_label': fold['indata_test'][i][0],
+                       'real_y': fold['y'][i],
+                       'prob': float(fold['probs'][i])
+                       }
+                writer.writerow(row)
+            csv_file.close()
+
 
 if __name__ == "__main__":
-    create_figs(nfolds=os.environ.get('NFOLDS', 1))  # Run with 1 to make it fast
+    create_figs(nfolds=int(os.environ.get('NFOLDS', 1)))  # Run with 1 to make it fast
