@@ -6,3 +6,6 @@ services:
       dockerfile: docker/Dockerfile
     volumes:
       - "./src:/dga_predict"
+    environment:
+      - NFOLDS=1
+

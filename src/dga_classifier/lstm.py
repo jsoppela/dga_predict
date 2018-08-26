@@ -49,14 +49,15 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
     for fold in range(nfolds):
         print "fold %u/%u" % (fold+1, nfolds)
-        X_train, X_test, y_train, y_test, _, label_test = train_test_split(X, y, labels, 
-                                                                           test_size=0.2)
+        indata_train, indata_test, X_train, X_test, y_train, y_test, _, label_test = \
+            train_test_split(indata, X, y, labels, test_size=0.2)
 
         print 'Build model...'
         model = build_model(max_features, maxlen)
 
         print "Train..."
-        X_train, X_holdout, y_train, y_holdout = train_test_split(X_train, y_train, test_size=0.05)
+        indata_train, indata_holdout, X_train, X_holdout, y_train, y_holdout = \
+            train_test_split(indata_train, X_train, y_train, test_size=0.05)
         best_iter = -1
         best_auc = 0.0
         out_data = {}
@@ -75,7 +76,7 @@ def run(max_epoch=25, nfolds=10, batch_size=128):
 
                 probs = model.predict_proba(X_test)
 
-                out_data = {'y':y_test, 'labels': label_test, 'probs':probs, 'epochs': ep,
+                out_data = {'indata_test': indata_test, 'y':y_test, 'labels': label_test, 'probs':probs, 'epochs': ep,
                             'confusion_matrix': sklearn.metrics.confusion_matrix(y_test, probs > .5)}
 
                 print sklearn.metrics.confusion_matrix(y_test, probs > .5)
