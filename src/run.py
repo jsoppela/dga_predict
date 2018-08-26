@@ -3,7 +3,7 @@ import itertools
 import os
 import pickle
 import matplotlib
-matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 import numpy as np
 
 import dga_classifier.bigram as bigram
@@ -12,7 +12,10 @@ import dga_classifier.lstm as lstm
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
+matplotlib.use('Agg')
+
 RESULT_FILE = os.environ.get('RESULT_FILE', 'results.pkl')
+
 
 def run_experiments(isbigram=True, islstm=True, nfolds=10):
     """Runs all experiments"""
@@ -28,6 +31,7 @@ def run_experiments(isbigram=True, islstm=True, nfolds=10):
         lstm_results = lstm.run(nfolds=nfolds, max_epoch=max_lstm_epoch)
 
     return bigram_results, lstm_results
+
 
 def create_figs(isbigram=os.environ.get('BIGRAM', True), islstm=os.environ.get('LSTM', True),
                 nfolds=os.environ.get('NFOLDS', 1), force=os.environ.get('FORCE', False)):
@@ -65,7 +69,6 @@ def create_figs(isbigram=os.environ.get('BIGRAM', True), islstm=os.environ.get('
         lstm_binary_fpr, lstm_binary_tpr, lstm_binary_auc = calc_macro_roc(fpr, tpr)
 
     # Save figure
-    from matplotlib import pyplot as plt
     with plt.style.context('bmh'):
         plt.plot(lstm_binary_fpr, lstm_binary_tpr,
                  label='LSTM (AUC = %.4f)' % (lstm_binary_auc, ), rasterized=True)
@@ -94,6 +97,7 @@ def calc_macro_roc(fpr, tpr):
         mean_tpr += interp(all_fpr, fpr[i], tpr[i])
 
     return all_fpr, mean_tpr / len(tpr), auc(all_fpr, mean_tpr) / len(tpr)
+
 
 if __name__ == "__main__":
     create_figs(nfolds=os.environ.get('NFOLDS', 1))  # Run with 1 to make it fast
