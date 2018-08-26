@@ -3,16 +3,18 @@ import itertools
 import os
 import pickle
 import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import numpy as np
 
 import dga_classifier.bigram as bigram
 import dga_classifier.lstm as lstm
 
+import csv
+
 from scipy import interp
 from sklearn.metrics import roc_curve, auc
 
-matplotlib.use('Agg')
 
 RESULT_FILE = os.environ.get('RESULT_FILE', 'results.pkl')
 
@@ -45,6 +47,8 @@ def create_figs(isbigram=os.environ.get('BIGRAM', True), islstm=os.environ.get('
         pickle.dump(results, open(RESULT_FILE, 'w'))
     else:
         results = pickle.load(open(RESULT_FILE))
+
+    write_results_to_csv(results)
 
     # Extract and calculate bigram ROC
     if results['bigram']:
@@ -98,6 +102,20 @@ def calc_macro_roc(fpr, tpr):
 
     return all_fpr, mean_tpr / len(tpr), auc(all_fpr, mean_tpr) / len(tpr)
 
+
+def write_results_to_csv(results):
+    for resultset in results:
+        for fold in results[resultset]:
+            writeset = {}
+            csv_file = open('{0}-{1}-resultset.csv'.format(resultset, fold['epochs']), 'w')
+            domain = [x[1] for x in fold['indata_test']]
+            label = [x[0] for x in fold['indata_test']]
+            writeset["domain"] = domain
+            writeset["label"] = label
+
+            writer = csv.writer(csv_file)
+            for key, value in writeset.items():
+                writer.writerow([key, value])
 
 if __name__ == "__main__":
     create_figs(nfolds=os.environ.get('NFOLDS', 1))  # Run with 1 to make it fast
