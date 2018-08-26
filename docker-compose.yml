@@ -7,6 +7,5 @@ services:
     volumes:
       - "./src:/dga_predict"
     environment:
-      - MAX_BIGRAM_EPOCH=1
-      - MAX_LSTM_EPOCH=1
-      - FORCE=1
+      - NFOLDS=1
+
